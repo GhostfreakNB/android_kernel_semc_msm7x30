@@ -28,7 +28,6 @@
 #include <linux/i2c.h>
 #include <linux/input.h>
 #include <linux/power_supply.h>
-#include <linux/input/kp_flip_switch.h>
 #include <linux/leds-pmic8058.h>
 #include <linux/msm_adc.h>
 #include <linux/dma-mapping.h>
@@ -142,8 +141,6 @@ static struct platform_device ion_dev;
 #define PMIC_GPIO_FLASH_BOOST_ENABLE	15	/* PMIC GPIO Number 16 */
 
 #define PMIC_GPIO_WLAN_EXT_POR  22 /* PMIC GPIO NUMBER 23 */
-
-#define	PM_FLIP_MPP 5 /* PMIC MPP 06 */
 
 #define DDR1_BANK_BASE 0X20000000
 #define DDR2_BANK_BASE 0X40000000
@@ -4739,36 +4736,6 @@ static struct msm_spm_platform_data msm_spm_data __initdata = {
 	.vctl_timeout_us = 50,
 };
 
-static int kp_flip_mpp_config(void)
-{
-	struct pm8xxx_mpp_config_data kp_flip_mpp = {
-		.type = PM8XXX_MPP_TYPE_D_INPUT,
-		.level = PM8018_MPP_DIG_LEVEL_S3,
-		.control = PM8XXX_MPP_DIN_TO_INT,
-	};
-
-	return pm8xxx_mpp_config(PM8058_MPP_PM_TO_SYS(PM_FLIP_MPP),
-						&kp_flip_mpp);
-}
-
-static struct flip_switch_pdata flip_switch_data = {
-	.name = "kp_flip_switch",
-	.flip_gpio = PM8058_GPIO_PM_TO_SYS(PM8058_GPIOS) + PM_FLIP_MPP,
-	.left_key = KEY_OPEN,
-	.right_key = KEY_CLOSE,
-	.active_low = 0,
-	.wakeup = 1,
-	.flip_mpp_config = kp_flip_mpp_config,
-};
-
-static struct platform_device flip_switch_device = {
-	.name   = "kp_flip_switch",
-	.id	= -1,
-	.dev    = {
-		.platform_data = &flip_switch_data,
-	}
-};
-
 static void __init msm7x30_init(void)
 {
 	int rc;
@@ -4870,9 +4837,6 @@ static void __init msm7x30_init(void)
 #ifdef CONFIG_I2C_SSBI
 	msm_device_ssbi7.dev.platform_data = &msm_i2c_ssbi7_pdata;
 #endif
-
-	if (machine_is_msm7x30_surf())
-		platform_device_register(&flip_switch_device);
 
 	pm8058_gpios_init();
 
