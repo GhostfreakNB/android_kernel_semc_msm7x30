@@ -3344,18 +3344,14 @@ static u32 msm_calculate_batt_capacity(u32 current_voltage , u32 high_voltage)
                        / (high_voltage - low_voltage);
 }
 
-
-static char *msm_adc_fluid_device_names[] = {
-	"LTC_ADC1",
-	"LTC_ADC2",
-	"LTC_ADC3",
-};
-
-static char *msm_adc_surf_device_names[] = {
+static char *msm_adc_device_names[] = {
 	"XO_ADC",
 };
 
-static struct msm_adc_platform_data msm_adc_pdata;
+static struct msm_adc_platform_data msm_adc_pdata = {
+	.dev_names = msm_adc_device_names,
+	.num_adc = ARRAY_SIZE(msm_adc_device_names),
+};
 
 static struct platform_device msm_adc_device = {
 	.name   = "msm_adc",
@@ -4616,13 +4612,6 @@ static void __init msm7x30_init(void)
 #if defined(CONFIG_TSIF) || defined(CONFIG_TSIF_MODULE)
 	msm_device_tsif.dev.platform_data = &tsif_platform_data;
 #endif
-	if (machine_is_msm7x30_fluid()) {
-		msm_adc_pdata.dev_names = msm_adc_fluid_device_names;
-		msm_adc_pdata.num_adc = ARRAY_SIZE(msm_adc_fluid_device_names);
-	} else {
-		msm_adc_pdata.dev_names = msm_adc_surf_device_names;
-		msm_adc_pdata.num_adc = ARRAY_SIZE(msm_adc_surf_device_names);
-	}
 
 	buses_init();
 
