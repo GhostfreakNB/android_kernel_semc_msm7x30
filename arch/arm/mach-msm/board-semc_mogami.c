@@ -4518,13 +4518,7 @@ static struct msm_spm_platform_data msm_spm_data __initdata = {
 
 static void __init msm7x30_init(void)
 {
-	int rc;
 	unsigned smem_size;
-	uint32_t usb_hub_gpio_cfg_value = GPIO_CFG(56,
-						0,
-						GPIO_CFG_OUTPUT,
-						GPIO_CFG_NO_PULL,
-						GPIO_CFG_2MA);
 	uint32_t soc_version = 0;
 
 	soc_version = socinfo_get_version();
@@ -4610,13 +4604,6 @@ static void __init msm7x30_init(void)
 #endif
 
 	pm8058_gpios_init();
-
-	if (machine_is_msm8x55_svlte_surf() || machine_is_msm8x55_svlte_ffa()) {
-		rc = gpio_tlmm_config(usb_hub_gpio_cfg_value, GPIO_CFG_ENABLE);
-		if (rc)
-			pr_err("%s: gpio_tlmm_config(%#x)=%d\n",
-				__func__, usb_hub_gpio_cfg_value, rc);
-	}
 
 	boot_reason = *(unsigned int *)
 		(smem_get_entry(SMEM_POWER_ON_STATUS_INFO, &smem_size));
