@@ -2561,6 +2561,13 @@ config SEMC_CHARGER_USB_ARCH
 	help
 	  This enables USB interface for charger.
 
+config MOGAMI_SLIDER
+	bool "Mogami slider"
+	depends on INPUT_GPIO = "y"
+	default n
+	help
+	  Select if GPIO slider switch is attached.
+
 config MSM_RTB
 	bool "Register tracing"
 	help

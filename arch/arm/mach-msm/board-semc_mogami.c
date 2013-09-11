@@ -98,6 +98,10 @@
 #include <mach/semc_charger_usb.h>
 #endif
 
+#ifdef CONFIG_MOGAMI_SLIDER
+#include <linux/gpio_event.h>
+#endif
+
 #ifdef CONFIG_INPUT_APDS9702
 #include <linux/apds9702.h>
 #endif
@@ -180,6 +184,38 @@ static struct platform_device ion_dev;
 static unsigned int phys_add = DDR2_BANK_BASE;
 unsigned long ebi1_phys_offset = DDR2_BANK_BASE;
 EXPORT_SYMBOL(ebi1_phys_offset);
+
+#ifdef CONFIG_MOGAMI_SLIDER
+static const struct gpio_event_direct_entry slider_mogami_gpio_map[] = {
+	{180, SW_LID},
+};
+
+static struct gpio_event_input_info slider_gpio_info = {
+	.info.func = gpio_event_input_func,
+	.flags = 0, /* GPIO event active low*/
+	.type = EV_SW,
+	.keymap = slider_mogami_gpio_map,
+	.keymap_size = ARRAY_SIZE(slider_mogami_gpio_map),
+};
+
+static struct gpio_event_info *slider_info[] = {
+	&slider_gpio_info.info,
+};
+
+static struct gpio_event_platform_data slider_data = {
+	.name		= "slider-mogami",
+	.info		= slider_info,
+	.info_count	= ARRAY_SIZE(slider_info),
+};
+
+struct platform_device slider_device_mogami = {
+	.name	= GPIO_EVENT_DEV_NAME,
+	.id	= -1,
+	.dev	= {
+		.platform_data	= &slider_data,
+	},
+};
+#endif /* CONFIG_MOGAMI_SLIDER */
 
 struct pm8xxx_gpio_init_info {
 	unsigned			gpio;
@@ -3156,6 +3192,9 @@ static struct platform_device *devices[] __initdata = {
 #endif
 #ifdef CONFIG_MSM_SDIO_AL
 	&msm_device_sdio_al,
+#ifdef CONFIG_MOGAMI_SLIDER
+	&slider_device_mogami,
+#endif
 #endif
 
 #if defined(CONFIG_CRYPTO_DEV_QCRYPTO) || \
