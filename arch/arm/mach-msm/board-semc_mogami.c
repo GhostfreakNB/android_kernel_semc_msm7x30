@@ -125,8 +125,6 @@ static struct platform_device ion_dev;
 #define PMIC_GPIO_SD_DET	36
 #define PMIC_GPIO_SDC4_EN_N	17  /* PMIC GPIO Number 18 */
 
-#define FPGA_SDCC_STATUS       0x8E0001A8
-
 #define PMIC_GPIO_SDC4_PWR_EN_N 24  /* PMIC GPIO Number 25 */
 
 /* Macros assume PMIC GPIOs start at 0 */
@@ -4226,30 +4224,6 @@ static unsigned int msm7x30_sdcc_slot_status(struct device *dev)
 		gpio_get_value_cansleep(
 			PM8058_GPIO_PM_TO_SYS(PMIC_GPIO_SD_DET - 1));
 }
-
-static int msm_sdcc_get_wpswitch(struct device *dv)
-{
-	void __iomem *wp_addr = 0;
-	uint32_t ret = 0;
-	struct platform_device *pdev;
-
-	if (!(machine_is_msm7x30_surf()))
-		return -1;
-	pdev = container_of(dv, struct platform_device, dev);
-
-	wp_addr = ioremap(FPGA_SDCC_STATUS, 4);
-	if (!wp_addr) {
-		pr_err("%s: Could not remap %x\n", __func__, FPGA_SDCC_STATUS);
-		return -ENOMEM;
-	}
-
-	ret = (((readl(wp_addr) >> 4) >> (pdev->id-1)) & 0x01);
-	pr_info("%s: WP Status for Slot %d = 0x%x \n", __func__,
-							pdev->id, ret);
-	iounmap(wp_addr);
-
-	return ret;
-}
 #endif
 
 #if defined(CONFIG_MMC_MSM_SDC1_SUPPORT)
@@ -4317,7 +4291,6 @@ static struct mmc_platform_data msm7x30_sdc4_data = {
 	.status      = msm7x30_sdcc_slot_status,
 	.status_irq  = PM8058_GPIO_IRQ(PMIC8058_IRQ_BASE, PMIC_GPIO_SD_DET - 1),
 	.irq_flags   = IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING,
-	.wpswitch    = msm_sdcc_get_wpswitch,
 	.msmsdcc_fmin	= 144000,
 	.msmsdcc_fmid	= 24576000,
 	.msmsdcc_fmax	= 49152000,
