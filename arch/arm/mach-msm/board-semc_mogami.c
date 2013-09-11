@@ -104,6 +104,10 @@
 #include <mach/semc_charger_usb.h>
 #endif
 
+#ifdef CONFIG_INPUT_APDS9702
+#include <linux/apds9702.h>
+#endif
+
 #if defined(CONFIG_LM3560) || defined(CONFIG_LM3561)
 #include <linux/lm356x.h>
 #endif
@@ -2200,6 +2204,88 @@ static struct lm356x_platform_data lm3561_platform_data = {
 };
 #endif
 
+#ifdef CONFIG_INPUT_APDS9702
+#define APDS9702_DOUT_GPIO   88
+#define APDS9702_VDD_VOLTAGE 2900000
+#define APDS9702_WAIT_TIME   5000
+
+static struct regulator *vreg_apds9702_vdd;
+
+static int apds9702_gpio_setup(int request)
+{
+	if (request) {
+		return gpio_request(APDS9702_DOUT_GPIO, "apds9702_dout");
+	} else {
+		gpio_free(APDS9702_DOUT_GPIO);
+		return 0;
+	}
+}
+
+static void apds9702_hw_config(int enable)
+{
+	return;
+}
+
+static void apds9702_power_mode(int enable)
+{
+	int rc = 0;
+
+	vreg_apds9702_vdd = regulator_get(NULL, "wlan");
+	if (IS_ERR(vreg_apds9702_vdd)) {
+		pr_err("%s: get vdd failed\n", __func__);
+		return;
+	}
+
+	if (enable) {
+		rc = regulator_set_voltage(vreg_apds9702_vdd, APDS9702_VDD_VOLTAGE, APDS9702_VDD_VOLTAGE);
+		if (rc) {
+			pr_err("%s: set voltage failed, rc=%d\n", __func__, rc);
+			goto vreg_configure_err;
+		}
+		rc = regulator_enable(vreg_apds9702_vdd);
+		if (rc) {
+			pr_err("%s: enable vdd failed, rc=%d\n", __func__, rc);
+			goto vreg_configure_err;
+		}
+	} else {
+		rc = regulator_set_voltage(vreg_apds9702_vdd, 0, APDS9702_VDD_VOLTAGE);
+		if (rc) {
+			pr_err("%s: set voltage failed, rc=%d\n", __func__, rc);
+			goto vreg_configure_err;
+		}
+		rc = regulator_disable(vreg_apds9702_vdd);
+		if (rc)
+			pr_err("%s: disable vdd failed, rc=%d\n", __func__, rc);
+	}
+
+	usleep(APDS9702_WAIT_TIME);
+
+	return;
+
+vreg_configure_err:
+	regulator_put(vreg_apds9702_vdd);
+	return;
+}
+
+static struct apds9702_platform_data apds9702_pdata = {
+	.gpio_dout      = APDS9702_DOUT_GPIO,
+	.is_irq_wakeup  = 1,
+	.hw_config      = apds9702_hw_config,
+	.power_mode     = apds9702_power_mode,
+	.gpio_setup     = apds9702_gpio_setup,
+	.ctl_reg = {
+		.trg   = 1,
+		.pwr   = 1,
+		.burst = 7,
+		.frq   = 3,
+		.dur   = 2,
+		.th    = 15,
+		.rfilt = 0,
+	},
+	.phys_dev_path = "/sys/devices/i2c-12/12-0054"
+};
+#endif
+
 static struct i2c_board_info msm_i2c_board_info[] = {
 #ifdef CONFIG_LEDS_AS3676
 	{
@@ -2222,6 +2308,13 @@ static struct i2c_board_info msm_i2c_board_info[] = {
 		.irq = PM8058_GPIO_IRQ(PMIC8058_IRQ_BASE, BQ24185_GPIO_IRQ - 1),
 		.platform_data = &bq24185_platform_data,
 		.type = BQ24185_NAME,
+	},
+#endif
+#ifdef CONFIG_INPUT_APDS9702
+	{
+		I2C_BOARD_INFO(APDS9702_NAME, 0xA8 >> 1),
+		.platform_data = &apds9702_pdata,
+		.type = APDS9702_NAME,
 	},
 #endif
 #ifdef CONFIG_LM3560
