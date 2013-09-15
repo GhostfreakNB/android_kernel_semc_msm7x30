@@ -187,6 +187,61 @@ static unsigned int phys_add = DDR2_BANK_BASE;
 unsigned long ebi1_phys_offset = DDR2_BANK_BASE;
 EXPORT_SYMBOL(ebi1_phys_offset);
 
+static int vreg_helper_on(const char *pzName, unsigned mv)
+{
+	struct vreg *reg = NULL;
+	int rc = 0;
+
+	reg = vreg_get(NULL, pzName);
+	if (IS_ERR(reg)) {
+		printk(KERN_ERR "Unable to resolve VREG name \"%s\"\n", pzName);
+		return rc;
+	}
+
+	if (mv != (unsigned int)-1)
+		rc = vreg_set_level(reg, mv);
+
+	if (rc) {
+		printk(KERN_ERR "Unable to set vreg \"%s\" level\n", pzName);
+		return rc;
+	}
+
+	rc = vreg_enable(reg);
+	if (rc) {
+		printk(KERN_ERR "Unable to enable vreg \"%s\" level\n", pzName);
+		return rc;
+	}
+
+	printk(KERN_INFO "Enabled VREG \"%s\" at %u mV\n", pzName, mv);
+	return rc;
+}
+
+#if defined(CONFIG_FB_MSM_MDDI_SONY_HVGA) || \
+	defined(CONFIG_FB_MSM_MDDI_HITACHI_HVGA) || \
+	defined(CONFIG_FB_MSM_MDDI_SII_HVGA) || \
+	defined(CONFIG_FB_MSM_MDDI_AUO_HVGA)
+static void vreg_helper_off(const char *pzName)
+{
+	struct vreg *reg = NULL;
+	int rc;
+
+	reg = vreg_get(NULL, pzName);
+	if (IS_ERR(reg)) {
+		printk(KERN_ERR "Unable to resolve VREG name \"%s\"\n", pzName);
+		return;
+	}
+
+	rc = vreg_disable(reg);
+	if (rc) {
+		printk(KERN_ERR "Unable to disable vreg \"%s\" level\n",
+			pzName);
+		return;
+	}
+
+	printk(KERN_INFO "Disabled VREG \"%s\"\n", pzName);
+}
+#endif
+
 struct pm8xxx_gpio_init_info {
 	unsigned			gpio;
 	struct pm_gpio			config;
