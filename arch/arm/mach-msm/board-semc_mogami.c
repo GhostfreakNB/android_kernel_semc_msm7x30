@@ -146,6 +146,36 @@
 #include <linux/mddi_auo_s6d05a1_hvga.h>
 #endif
 
+#ifdef CONFIG_CHARGER_BQ24185
+#define BQ24185_GPIO_IRQ		31
+#endif
+
+#ifdef CONFIG_SENSORS_AKM8975
+#define AKM8975_GPIO			92
+#endif
+#ifdef CONFIG_INPUT_BMA150_NG
+#define BMA150_GPIO			51
+#endif
+#ifdef CONFIG_INPUT_BMA250
+#define BMA250_GPIO			51
+#define BMA250_DEFAULT_RATE		50
+#endif
+
+#if defined(CONFIG_LM3560) || defined(CONFIG_LM3561)
+#define LM356X_HW_RESET_GPIO		2
+#endif
+
+#ifdef CONFIG_FB_MSM_MDDI_NOVATEK_FWVGA
+#define NOVATEK_GPIO_RESET		157
+#endif
+
+#if defined(CONFIG_FB_MSM_MDDI_SONY_HVGA) || \
+	defined(CONFIG_FB_MSM_MDDI_HITACHI_HVGA) || \
+	defined(CONFIG_FB_MSM_MDDI_SII_HVGA) || \
+	defined(CONFIG_FB_MSM_MDDI_AUO_HVGA)
+#define GPIO_MSM_MDDI_XRES		157
+#endif
+
 #define MSM_PMEM_SF_SIZE	0x1700000
 #ifdef CONFIG_FB_MSM_TRIPLE_BUFFER
 #define MSM_FB_PRIM_BUF_SIZE   (864 * 480 * 4 * 3) /* 4bpp * 3 Pages */
@@ -158,35 +188,6 @@
  */
 #define MSM_V4L2_VIDEO_OVERLAY_BUF_SIZE 2764800
 
-#ifdef CONFIG_CHARGER_BQ24185
-#define BQ24185_GPIO_IRQ		(31)
-#endif
-
-#ifdef CONFIG_SENSORS_AKM8975
-#define AKM8975_GPIO			92
-#endif
-#ifdef CONFIG_INPUT_BMA150_NG
-#define BMA150_GPIO			51
-#endif
-#ifdef CONFIG_INPUT_BMA250
-#define BMA250_GPIO		51
-#define BMA250_DEFAULT_RATE	50
-#endif
-
-#if defined(CONFIG_LM3560) || defined(CONFIG_LM3561)
-#define LM356X_HW_RESET_GPIO 2
-#endif
-
-#ifdef CONFIG_FB_MSM_MDDI_NOVATEK_FWVGA
-#define NOVATEK_GPIO_RESET	157
-#endif
-
-#if defined(CONFIG_FB_MSM_MDDI_SONY_HVGA) || \
-	defined(CONFIG_FB_MSM_MDDI_HITACHI_HVGA) || \
-	defined(CONFIG_FB_MSM_MDDI_SII_HVGA) || \
-	defined(CONFIG_FB_MSM_MDDI_AUO_HVGA)
-#define GPIO_MSM_MDDI_XRES	157
-#endif
 #define MSM_FB_EXT_BUF_SIZE    0
 
 #ifdef CONFIG_FB_MSM_OVERLAY0_WRITEBACK
