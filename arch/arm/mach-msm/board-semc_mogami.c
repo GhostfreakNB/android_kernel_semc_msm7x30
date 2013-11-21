@@ -3297,6 +3297,7 @@ static struct msm_panel_common_pdata mdp_pdata = {
 	.mem_hid = BIT(ION_CP_WB_HEAP_ID),
 };
 
+#ifdef CONFIG_FB_MSM_TVOUT
 static struct regulator *atv_s4, *atv_ldo9;
 
 static int __init atv_dac_power_init(void)
@@ -3368,6 +3369,7 @@ static struct tvenc_platform_data atv_pdata = {
 	.poll		 = 1,
 	.pm_vid_en	 = atv_dac_power,
 };
+#endif
 
 #ifdef CONFIG_SIMPLE_REMOTE_PLATFORM
 #define PLUG_DET_ENA_PIN 80
@@ -3513,8 +3515,8 @@ static void __init msm_fb_add_devices(void)
 {
 	msm_fb_register_device("mdp", &mdp_pdata);
 	msm_fb_register_device("pmdh", &mddi_pdata);
-	msm_fb_register_device("tvenc", &atv_pdata);
 #ifdef CONFIG_FB_MSM_TVOUT
+	msm_fb_register_device("tvenc", &atv_pdata);
 	msm_fb_register_device("tvout_device", NULL);
 #endif
 }
@@ -4281,7 +4283,9 @@ static void __init msm7x30_init(void)
 	msm7x30_init_nand();
 	msm_qsd_spi_init();
 
+#ifdef CONFIG_FB_MSM_TVOUT
 	atv_dac_power_init();
+#endif
 #ifdef CONFIG_INPUT_KEYRESET
 	platform_device_register(&semc_reset_keys_device);
 #endif
